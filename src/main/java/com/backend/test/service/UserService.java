@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -62,13 +63,15 @@ public class UserService implements UserRepository {
         throw new RuntimeException("Error saving user", e);
     }
 }
-
     @Cacheable(value = "users")
     @Override
     public List<User> findAll() {
         logger.info("Finding all users");
-        return jdbcTemplate.query("SELECT * FROM users", BeanPropertyRowMapper.newInstance(User.class));
+        return jdbcTemplate.query("SELECT * FROM users", BeanPropertyRowMapper.newInstance(User.class))
+                .stream()
+                .collect(Collectors.toList());
     }
+
 
     @Cacheable(value = "users", key = "#id")
     @Override
@@ -117,52 +120,3 @@ public class UserService implements UserRepository {
 
 
 
-
-//package com.backend.test.service;
-//
-//import com.backend.test.entity.User;
-//import com.backend.test.repository.UserRepository;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.dao.IncorrectResultSizeDataAccessException;
-//import org.springframework.jdbc.core.BeanPropertyRowMapper;
-//import org.springframework.jdbc.core.JdbcTemplate;
-//import org.springframework.stereotype.Repository;
-//
-//import java.util.List;
-//
-//@Repository
-//public class UserService implements UserRepository {
-//
-//    @Autowired
-//    private JdbcTemplate jdbcTemplate;
-//
-//    @Override
-//    public Integer save(User user){
-//        return jdbcTemplate.update("INSERT INTO users(firstname, lastname, email, address) VALUES (?,?,?,?)",
-//                new Object[] {user.getFirstname(),user.getLastname(),user.getEmail(), user.getAddress() });
-//    }
-//    @Override
-//    public List<User>findAll(){
-//        return jdbcTemplate.query("SELECT * FROM users", BeanPropertyRowMapper.newInstance(User.class));
-//    }
-//    @Override
-//    public User findById(Long id){
-//        try {
-//            User user =  jdbcTemplate.queryForObject("SELECT * FROM users WHERE id =?", BeanPropertyRowMapper.newInstance(User.class));
-//            return user;
-//        }catch (IncorrectResultSizeDataAccessException e){
-//            return null;
-//        }
-//    }
-//    @Override
-//    public Integer update(User user){
-//        return jdbcTemplate.update("UPDATE users SET firstname=?, lastname=?, email=?, address=?",
-//                new Object[]{user.getFirstname(), user.getLastname(), user.getEmail(), user.getAddress()});
-//
-//    }
-//    @Override
-//    public Integer deleteById(Long id){
-//        return jdbcTemplate.update("DELETE FROM users WHERE id=?", id);
-//
-//    }
-//}
